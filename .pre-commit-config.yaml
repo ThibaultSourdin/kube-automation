@@ -1,0 +1,71 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: trailing-whitespace
+    args: [--markdown-linebreak-ext=md]
+
+- repo: local
+  hooks:
+  - id: order-python
+    name: Check Python imports order ⏬
+    entry: isort
+    language: system
+    pass_filenames: false
+    always_run: true
+    args: [src]
+
+  - id: style-python
+    name: Check Python style 🎨
+    entry: black
+    language: system
+    pass_filenames: false
+    always_run: true
+    args: [src]
+
+  - id: compliance-python
+    name: Check Python compliance 👮
+    entry: pylint
+    language: system
+    pass_filenames: false
+    always_run: true
+    args: [src]
+
+  - id: type-checking 🔍
+    name: Checking Python types
+    entry: mypy
+    language: system
+    pass_filenames: false
+    always_run: true
+    args: [src]
+
+  - id: test-python
+    name: Test Python code 🧪
+    entry: pytest
+    language: system
+    pass_filenames: false
+    always_run: true
+
+  - id: style-terraform
+    name: Check Terraform style 🎨
+    entry: terraform
+    language: system
+    pass_filenames: false
+    always_run: true
+    args: [-chdir=infrastructure/terraform, fmt]
+
+  - id: validate-terraform
+    name: Validate Terraform code 🛠️
+    entry: terraform
+    language: system
+    pass_filenames: false
+    always_run: true
+    args: [-chdir=infrastructure/terraform, validate]
+
+  - id: check-infra
+    name: Check Infrastructure as Code 💎
+    entry: checkov
+    language: system
+    pass_filenames: false
+    always_run: true
+    args: [--config-file, .checkov-config.yaml]

@@ -1,0 +1,4 @@
+.venv
+.stimio
+__pycache__
+.terraform

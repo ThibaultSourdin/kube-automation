@@ -1,54 +1,49 @@
-import sys
-import boto3
-import os
-import base64
-import re
+"""EKS automation - main module."""
 
+import base64
+import os
+import re
+import sys
+
+import boto3
 from botocore.signers import RequestSigner
 from kubernetes import client, config
-from src import deployment
-from src import statefulset
-from src import loadbalancer
 
+from src import deployment, loadbalancer, statefulset
 
 AWS_REGION = os.getenv("AWS_REGION")
 CLUSTER_NAME = os.getenv("CLUSTER_NAME")
 
 
 def get_bearer_token():
-    STS_TOKEN_EXPIRES_IN = 60
+    """Get STS bearer token."""
+    sts_token_expires_in = 60
     session = boto3.session.Session(region_name=AWS_REGION)
-    client = session.client('sts')
+    client = session.client("sts")
     service_id = client.meta.service_model.service_id
     signer = RequestSigner(
-        service_id,
-        AWS_REGION,
-        'sts',
-        'v4',
-        session.get_credentials(),
-        session.events
+        service_id, AWS_REGION, "sts", "v4", session.get_credentials(), session.events
     )
     params = {
-        'method': 'GET',
-        'url': 'https://sts.{}.amazonaws.com/?Action=GetCallerIdentity&Version=2011-06-15'.format(AWS_REGION),
-        'body': {},
-        'headers': {
-            'x-k8s-aws-id': CLUSTER_NAME
-        },
-        'context': {}
+        "method": "GET",
+        "url": f"https://sts.{AWS_REGION}.amazonaws.com/?Action=GetCallerIdentity&Version=2011-06-15",
+        "body": {},
+        "headers": {"x-k8s-aws-id": CLUSTER_NAME},
+        "context": {},
     }
     signed_url = signer.generate_presigned_url(
         params,
         region_name=AWS_REGION,
-        expires_in=STS_TOKEN_EXPIRES_IN,
-        operation_name=''
+        expires_in=sts_token_expires_in,
+        operation_name="",
     )
-    base64_url = base64.urlsafe_b64encode(signed_url.encode('utf-8')).decode('utf-8')
+    base64_url = base64.urlsafe_b64encode(signed_url.encode("utf-8")).decode("utf-8")
     # remove any base64 encoding padding:
-    return 'k8s-aws-v1.' + re.sub(r'=*', '', base64_url)
+    return "k8s-aws-v1." + re.sub(r"=*", "", base64_url)
 
 
 def scale_down():
+    """Scale eks down."""
     v1 = client.CoreV1Api()
     apps_v1 = client.AppsV1Api()
 
@@ -62,6 +57,7 @@ def scale_down():
 
 
 def scale_up():
+    """Scale eks up."""
     v1 = client.CoreV1Api()
     apps_v1 = client.AppsV1Api()
 
@@ -74,12 +70,13 @@ def scale_up():
         loadbalancer.scale_up(v1, namespace)
 
 
-if __name__ == "__main__":
-
-    eks = boto3.client('eks', region_name=AWS_REGION)
+def handler(event, context):  # noqa: ARG001
+    """Lambda handler."""
+    eks = boto3.client("eks", region_name=AWS_REGION)
     cluster_info = eks.describe_cluster(name=CLUSTER_NAME)
-    cluster_endpoint = cluster_info['cluster']['endpoint']
-    cert_authority = cluster_info['cluster']['certificateAuthority']['data']
+    cluster_endpoint = cluster_info["cluster"]["endpoint"]
+    cert_authority = cluster_info["cluster"]["certificateAuthority"]["data"]
+
     kubeconfig = {
         "apiVersion": "v1",
         "clusters": [
@@ -101,9 +98,14 @@ if __name__ == "__main__":
     }
     config.load_kube_config_from_dict(config_dict=kubeconfig)
 
-    scaling_mode = sys.argv[1]
+    scaling_mode = event["scaling_mode"]
 
     if scaling_mode == "down":
         scale_down()
     elif scaling_mode == "up":
         scale_up()
+
+
+if __name__ == "__main__":
+    scaling_mode = sys.argv[1]
+    handler({"scaling_mode": scaling_mode}, {})

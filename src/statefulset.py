@@ -1,6 +1,8 @@
+"""EKS automation - statefulset module."""
+
+
 def scale_down(api_instance, namespace: str):
     """Scale down statefulsets."""
-
     statefulsets = api_instance.list_namespaced_stateful_set(namespace).items
     for statefulset in statefulsets:
         name = statefulset.metadata.name
@@ -11,7 +13,6 @@ def scale_down(api_instance, namespace: str):
 
 def scale_up(api_instance, namespace: str):
     """Scale up statefulsets."""
-
     statefulsets = api_instance.list_namespaced_stateful_set(namespace).items
     for statefulset in statefulsets:
         name = statefulset.metadata.name

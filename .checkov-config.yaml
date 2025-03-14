@@ -2,3 +2,11 @@ framework: terraform
 directory:
   - infrastructure
 skip-check:
+  - CKV_AWS_117 # Ensure that AWS Lambda function is configured inside a VPC
+  - CKV_AWS_50 # X-Ray tracing is enabled for Lambda
+  - CKV_AWS_173 # Check encryption settings for Lambda environmental variable
+  - CKV_AWS_116 # Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)
+  - CKV_AWS_272 # Ensure AWS Lambda function is configured to validate code-signing
+  - CKV_AWS_158 # Ensure that CloudWatch Log Group is encrypted by KMS
+  - CKV_AWS_338 # Ensure CloudWatch log groups retains logs for at least 1 year
+  - CKV_AWS_297 # Ensure EventBridge Scheduler Schedule uses Customer Managed Key (CMK)

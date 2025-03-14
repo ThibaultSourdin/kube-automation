@@ -1,6 +1,8 @@
 # Utilities
 ruff
 mypy
+kubernetes-typed
+boto3-stubs
 checkov
 
 # src

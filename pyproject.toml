@@ -1,0 +1,24 @@
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    "D",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # pep8-naming
+    "N",
+    # flake8-unused-arguments
+    "ARG",
+]
+ignore = ["D203", "D213"]
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 100

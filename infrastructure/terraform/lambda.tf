@@ -1,6 +1,7 @@
 resource "aws_cloudwatch_log_group" "lambda" {
   name              = "/aws/lambda/${local.ox_header}lambda${local.ox_footer}"
   retention_in_days = 7
+  tags              = local.tags
 }
 
 resource "aws_iam_role" "lambda" {
@@ -21,10 +22,10 @@ resource "aws_iam_role" "lambda" {
   })
 }
 
-resource "aws_iam_policy" "lambda" {
-  name        = "${local.ox_header}lambda${local.ox_footer}"
-  description = "Policy for EKS Automation lambda function"
-  tags        = local.tags
+
+resource "aws_iam_role_policy" "lambda" {
+  name = "${local.ox_header}lambda${local.ox_footer}"
+  role = aws_iam_role.lambda.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -79,11 +80,6 @@ resource "aws_iam_policy" "lambda" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda" {
-  role       = aws_iam_role.lambda.name
-  policy_arn = aws_iam_policy.lambda.arn
-}
-
 resource "aws_eks_access_entry" "lambda" {
   cluster_name  = var.kubernetes_cluster_name
   principal_arn = aws_iam_role.lambda.arn
@@ -107,17 +103,18 @@ data "archive_file" "lambda" {
 }
 
 resource "aws_lambda_function" "lambda" {
-  function_name = "${local.ox_header}lambda${local.ox_footer}"
-  description   = "EKS automation"
-  runtime       = "python3.12"
-  handler       = "src.lambda_handler.handler"
-  filename      = data.archive_file.lambda.output_path
-  role          = aws_iam_role.lambda.arn
-  timeout       = 30
-  memory_size   = 1024
-  tags          = local.tags
+  function_name                  = "${local.ox_header}lambda${local.ox_footer}"
+  description                    = "EKS automation"
+  runtime                        = "python3.12"
+  handler                        = "src.main.handler"
+  filename                       = data.archive_file.lambda.output_path
+  role                           = aws_iam_role.lambda.arn
+  timeout                        = 60
+  memory_size                    = 1024
+  reserved_concurrent_executions = 1
+  tags                           = local.tags
 
-  source_code_hash               = data.archive_file.lambda.output_base64sha256
+  source_code_hash = data.archive_file.lambda.output_base64sha256
 
   environment {
     variables = {

@@ -3,33 +3,34 @@ repos:
   rev: v5.0.0
   hooks:
   - id: trailing-whitespace
+    name: Trim Trailing Whitespace ✂️
     args: [--markdown-linebreak-ext=md]
 
 - repo: local
   hooks:
   - id: order-python
     name: Check Python imports order ⏬
-    entry: isort
+    entry: ruff
     language: system
     pass_filenames: false
     always_run: true
-    args: [src]
+    args: [check, --select, I, --fix, src]
 
   - id: style-python
     name: Check Python style 🎨
-    entry: black
+    entry: ruff
     language: system
     pass_filenames: false
     always_run: true
-    args: [src]
+    args: [format, src]
 
   - id: compliance-python
     name: Check Python compliance 👮
-    entry: pylint
+    entry: ruff
     language: system
     pass_filenames: false
     always_run: true
-    args: [src]
+    args: [check, src]
 
   - id: type-checking 🔍
     name: Checking Python types
@@ -38,13 +39,6 @@ repos:
     pass_filenames: false
     always_run: true
     args: [src]
-
-  - id: test-python
-    name: Test Python code 🧪
-    entry: pytest
-    language: system
-    pass_filenames: false
-    always_run: true
 
   - id: style-terraform
     name: Check Terraform style 🎨

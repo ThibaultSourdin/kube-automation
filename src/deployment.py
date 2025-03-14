@@ -1,6 +1,8 @@
+"""EKS automation - deployment module."""
+
+
 def scale_down(api_instance, namespace: str):
     """Scale down deployments."""
-
     deployments = api_instance.list_namespaced_deployment(namespace).items
     for deployment in deployments:
         name = deployment.metadata.name
@@ -11,7 +13,6 @@ def scale_down(api_instance, namespace: str):
 
 def scale_up(api_instance, namespace: str):
     """Scale up deployments."""
-
     deployments = api_instance.list_namespaced_deployment(namespace).items
     for deployment in deployments:
         name = deployment.metadata.name
